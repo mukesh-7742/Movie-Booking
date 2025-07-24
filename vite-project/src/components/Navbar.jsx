@@ -47,7 +47,7 @@ const Navbar = () => {
             className="block px-4 py-2 rounded hover:bg-indigo-100 text-indigo-700 font-medium"
             onClick={() => setOpen(false)}
           >
-             Booking 
+             My Booking 
           </Link>
         </li>
         <li className="mx-0 md:mx-3 my-2 md:my-0">
