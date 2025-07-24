@@ -1,54 +1,70 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet";
+// pages/Booking.jsx
+import React from "react";
+import { useParams } from "react-router-dom";
+import BookingForm from "../components/Bookingform";
 
-const Bookings = () => {
-  const [bookings, setBookings] = useState([]);
+const movies = [
+  {
+    id: 1,
+    title: "Spider-Man: No Way Home",
+    poster: "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
+    description: "Peter Parker faces his biggest challenge with help from multiverse heroes.",
+    director: "Jon Watts",
+    year: 2021,
+    duration: "2h 28m",
+    genres: ["Action", "Adventure", "Superhero"],
+    rating: 4.5,
+    trailer: "https://www.youtube.com/watch?v=JfVOs4VSpmA",
+  },
+  {
+    id: 2,
+    title: "Oppenheimer",
+    poster: "https://image.tmdb.org/t/p/w500/8QVDXDiOGHRcAD4oM6MXjE0osSj.jpg",
+    description: "A gripping biography of J. Robert Oppenheimer, father of the atomic bomb.",
+    director: "Christopher Nolan",
+    year: 2023,
+    duration: "3h 0m",
+    genres: ["Biography", "Drama", "History"],
+    rating: 5,
+    trailer: "https://www.youtube.com/watch?v=uYPbbksJxIg",
+  },
+  {
+    id: 3,
+    title: "Barbie",
+    poster: "https://image.tmdb.org/t/p/w500/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg",
+    description: "Barbie and Ken journey from the perfect world of Barbieland to the real world.",
+    director: "Greta Gerwig",
+    year: 2023,
+    duration: "1h 54m",
+    genres: ["Comedy", "Fantasy", "Adventure"],
+    rating: 4,
+    trailer: "https://www.youtube.com/watch?v=pBk4NYhWNMM",
+  },
+  {
+    id: 4,
+    title: "Guardians of the Galaxy Vol. 3",
+    poster: "https://image.tmdb.org/t/p/w500/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg",
+    description: "The Guardians face their past and fight to protect their family.",
+    director: "James Gunn",
+    year: 2023,
+    duration: "2h 30m",
+    genres: ["Sci-Fi", "Action", "Comedy"],
+    rating: 4.8,
+    trailer: "https://www.youtube.com/watch?v=u3V5KDHRQvk",
+  },
+];
+const Booking = () => {
+  const { id } = useParams();
+  const movie = movies.find((m) => m.id === parseInt(id));
 
-  useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("bookings")) || [];
-    setBookings(data.reverse()); // Show latest booking first
-  }, []);
+  if (!movie) return <p>Movie not found</p>;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4 flex flex-col items-center">
-      <Helmet>
-        <title>My Bookings | Movie Booking App</title>
-      </Helmet>
-
-      <h2 className="text-3xl font-bold mb-2 text-indigo-700">🎟 My Bookings</h2>
-      <p className="text-sm text-gray-600 mb-6 text-center">Here’s a list of your recent bookings.</p>
-
-      <div className="mb-6">
-        <Link to="/movies">
-          <button className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">
-            &larr; Back to Movies
-          </button>
-        </Link>
-      </div>
-
-      {bookings.length === 0 ? (
-        <p className="text-gray-500 mt-4">No bookings found.</p>
-      ) : (
-        <div className="w-full max-w-2xl space-y-4">
-          {bookings.map((booking) => (
-            <div
-              key={booking.id}
-              className="bg-white border border-gray-200 shadow rounded-lg p-4"
-            >
-              <h3 className="text-lg font-semibold text-indigo-800">{booking.movieTitle}</h3>
-              <p className="text-gray-700 mt-1"><strong>Name:</strong> {booking.name}</p>
-              <p className="text-gray-700"><strong>Email:</strong> {booking.email}</p>
-              <p className="text-gray-700"><strong>Seats:</strong> {booking.seats}</p>
-              <p className="text-gray-500 text-sm mt-1">
-                <strong>Booked on:</strong> {new Date(booking.timestamp).toLocaleString()}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 py-10">
+      <h2 className="text-3xl font-bold mb-6 text-indigo-700">Book Your Ticket</h2>
+      <BookingForm movie={movie} />
     </div>
   );
 };
 
-export default Bookings;
+export default Booking;
