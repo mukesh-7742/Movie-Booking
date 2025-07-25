@@ -21,4 +21,3 @@ If you are developing a production application, we recommend using TypeScript wi
 
 ## LOOM Share Video Link
 
-https://www.loom.com/share/6870d0e3e6874ca9b46df0ed2d54469d?sid=2a090c9b-7946-48ed-a329-12673fe73cff

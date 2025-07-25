@@ -21,6 +21,7 @@ function App() {
         <Route path="/movies/:id" element={<MovieDetails />} />
         <Route path="/booking/:id" element={<Booking />} />
         <Route path="/bookings" element={<Bookings />} />
+       
       </Routes>
     </Router>
   );
