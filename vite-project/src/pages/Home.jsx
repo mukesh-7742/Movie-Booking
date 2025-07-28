@@ -22,6 +22,7 @@ const movies = [
     title: "Guardians of the Galaxy Vol. 3",
     poster: "https://image.tmdb.org/t/p/w500/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg",
   },
+  
 ];
 
 function Home() {

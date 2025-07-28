@@ -3,10 +3,106 @@ import { useParams, useNavigate } from "react-router-dom";
 import SeatSelector from "../components/SeatSelector";
 
 const movies = [
-  { id: 1, title: "Spider-Man: No Way Home", poster: "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg" },
-  { id: 2, title: "Oppenheimer", poster: "https://image.tmdb.org/t/p/w500/8QVDXDiOGHRcAD4oM6MXjE0osSj.jpg" },
-  { id: 3, title: "Barbie", poster: "https://image.tmdb.org/t/p/w500/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg" },
-  { id: 4, title: "Guardians of the Galaxy Vol. 3", poster: "https://image.tmdb.org/t/p/w500/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg" },
+  {
+    id: 1,
+    title: "Spider-Man: No Way Home",
+    poster: "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
+  },
+  {
+    id: 2,
+    title: "Oppenheimer",
+    poster: "https://image.tmdb.org/t/p/w500/8QVDXDiOGHRcAD4oM6MXjE0osSj.jpg",
+  },
+  {
+    id: 3,
+    title: "Barbie",
+    poster: "https://image.tmdb.org/t/p/w500/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg",
+  },
+  {
+    id: 4,
+    title: "Guardians of the Galaxy Vol. 3",
+    poster: "https://image.tmdb.org/t/p/w500/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg",
+  },
+  {
+    id: 5,
+    title: "The Batman",
+    poster: "https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg",
+  },
+  {
+    id: 6,
+    title: "Top Gun: Maverick",
+    poster: "https://image.tmdb.org/t/p/w500/62HCnUTziyWcpDaBO2i1DX17ljH.jpg",
+  },
+  {
+    id: 7,
+    title: "Doctor Strange in the Multiverse of Madness",
+    poster: "https://image.tmdb.org/t/p/w500/9Gtg2DzBhmYamXBS1hKAhiwbBKS.jpg",
+  },
+  {
+    id: 8,
+    title: "Dune: Part One",
+    poster: "https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg",
+  },
+  {
+    id: 9,
+    title: "The Flash",
+    poster: "https://image.tmdb.org/t/p/w500/rktDFPbfHfUbArZ6OOOKsXcv0Bm.jpg",
+  },
+  {
+    id: 10,
+    title: "Avatar: The Way of Water",
+    poster: "https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg",
+  },
+  {
+    id: 11,
+    title: "John Wick: Chapter 4",
+    poster: "https://image.tmdb.org/t/p/w500/vZloFAK7NmvMGKE7VkF5UHaz0I.jpg",
+  },
+  {
+    id: 12,
+    title: "Black Panther: Wakanda Forever",
+    poster: "https://image.tmdb.org/t/p/w500/sv1xJUazXeYqALzczSZ3O6nkH75.jpg",
+  },
+  {
+    id: 13,
+    title: "The Super Mario Bros. Movie",
+    poster: "https://image.tmdb.org/t/p/w500/qNBAXBIQlnOThrVvA6mA2B5ggV6.jpg",
+  },
+  {
+    id: 14,
+    title: "Fast X",
+    poster: "https://image.tmdb.org/t/p/w500/fiVW06jE7z9YnO4trhaMEdclSiC.jpg",
+  },
+  {
+    id: 15,
+    title: "Mission: Impossible – Dead Reckoning",
+    poster: "https://image.tmdb.org/t/p/w500/NNxYkU70HPurnNCSiCjYAmacwm.jpg",
+  },
+  {
+    id: 16,
+    title: "No Time to Die",
+    poster: "https://image.tmdb.org/t/p/w500/iUgygt3fscRoKWCV1d0C7FbM9TP.jpg",
+  },
+  {
+    id: 17,
+    title: "Eternals",
+    poster: "https://image.tmdb.org/t/p/w500/b6qUu00iIIkXX13szFy7d0CyNcg.jpg",
+  },
+  {
+    id: 18,
+    title: "The Matrix Resurrections",
+    poster: "https://image.tmdb.org/t/p/w500/8c4a8kE7PizaGQQnditMmI1xbRp.jpg",
+  },
+  {
+    id: 19,
+    title: "Shang-Chi and the Legend of the Ten Rings",
+    poster: "https://image.tmdb.org/t/p/w500/1BIoJGKbXjdFDAqUEiA2VHqkK1Z.jpg",
+  },
+  {
+    id: 20,
+    title: "The Marvels",
+    poster: "https://image.tmdb.org/t/p/w500/Ag3D9I5tYJdSLUu8S8ZjuTq3Rxk.jpg",
+  },
 ];
 
 const BookingForm = () => {

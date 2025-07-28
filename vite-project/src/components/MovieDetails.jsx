@@ -2,7 +2,7 @@ import React from "react";
 import { useParams, Link } from "react-router-dom";
 
 const movies = [
-  {
+   {
     id: 1,
     title: "Spider-Man: No Way Home",
     poster: "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
@@ -50,6 +50,7 @@ const movies = [
     rating: 4.8,
     trailer: "https://www.youtube.com/watch?v=u3V5KDHRQvk",
   },
+ 
 ];
 
 const MovieDetails = () => {
