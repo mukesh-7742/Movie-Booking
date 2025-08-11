@@ -1,109 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import SeatSelector from "../components/SeatSelector";
+import movies from "../data/Movies.js";
 
-const movies = [
-  {
-    id: 1,
-    title: "Spider-Man: No Way Home",
-    poster: "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
-  },
-  {
-    id: 2,
-    title: "Oppenheimer",
-    poster: "https://image.tmdb.org/t/p/w500/8QVDXDiOGHRcAD4oM6MXjE0osSj.jpg",
-  },
-  {
-    id: 3,
-    title: "Barbie",
-    poster: "https://image.tmdb.org/t/p/w500/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg",
-  },
-  {
-    id: 4,
-    title: "Guardians of the Galaxy Vol. 3",
-    poster: "https://image.tmdb.org/t/p/w500/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg",
-  },
-  {
-    id: 5,
-    title: "The Batman",
-    poster: "https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg",
-  },
-  {
-    id: 6,
-    title: "Top Gun: Maverick",
-    poster: "https://image.tmdb.org/t/p/w500/62HCnUTziyWcpDaBO2i1DX17ljH.jpg",
-  },
-  {
-    id: 7,
-    title: "Doctor Strange in the Multiverse of Madness",
-    poster: "https://image.tmdb.org/t/p/w500/9Gtg2DzBhmYamXBS1hKAhiwbBKS.jpg",
-  },
-  {
-    id: 8,
-    title: "Dune: Part One",
-    poster: "https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg",
-  },
-  {
-    id: 9,
-    title: "The Flash",
-    poster: "https://image.tmdb.org/t/p/w500/rktDFPbfHfUbArZ6OOOKsXcv0Bm.jpg",
-  },
-  {
-    id: 10,
-    title: "Avatar: The Way of Water",
-    poster: "https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg",
-  },
-  {
-    id: 11,
-    title: "John Wick: Chapter 4",
-    poster: "https://image.tmdb.org/t/p/w500/vZloFAK7NmvMGKE7VkF5UHaz0I.jpg",
-  },
-  {
-    id: 12,
-    title: "Black Panther: Wakanda Forever",
-    poster: "https://image.tmdb.org/t/p/w500/sv1xJUazXeYqALzczSZ3O6nkH75.jpg",
-  },
-  {
-    id: 13,
-    title: "The Super Mario Bros. Movie",
-    poster: "https://image.tmdb.org/t/p/w500/qNBAXBIQlnOThrVvA6mA2B5ggV6.jpg",
-  },
-  {
-    id: 14,
-    title: "Fast X",
-    poster: "https://image.tmdb.org/t/p/w500/fiVW06jE7z9YnO4trhaMEdclSiC.jpg",
-  },
-  {
-    id: 15,
-    title: "Mission: Impossible – Dead Reckoning",
-    poster: "https://image.tmdb.org/t/p/w500/NNxYkU70HPurnNCSiCjYAmacwm.jpg",
-  },
-  {
-    id: 16,
-    title: "No Time to Die",
-    poster: "https://image.tmdb.org/t/p/w500/iUgygt3fscRoKWCV1d0C7FbM9TP.jpg",
-  },
-  {
-    id: 17,
-    title: "Eternals",
-    poster: "https://image.tmdb.org/t/p/w500/b6qUu00iIIkXX13szFy7d0CyNcg.jpg",
-  },
-  {
-    id: 18,
-    title: "The Matrix Resurrections",
-    poster: "https://image.tmdb.org/t/p/w500/8c4a8kE7PizaGQQnditMmI1xbRp.jpg",
-  },
-  {
-    id: 19,
-    title: "Shang-Chi and the Legend of the Ten Rings",
-    poster: "https://image.tmdb.org/t/p/w500/1BIoJGKbXjdFDAqUEiA2VHqkK1Z.jpg",
-  },
-  {
-    id: 20,
-    title: "The Marvels",
-    poster: "https://image.tmdb.org/t/p/w500/Ag3D9I5tYJdSLUu8S8ZjuTq3Rxk.jpg",
-  },
-];
+const cleanBookings = (bookings) => {
+  if (!Array.isArray(bookings)) return [];
+  return bookings.filter(
+    (b) =>
+      b &&
+      typeof b === "object" &&
+      "movieId" in b &&
+      Array.isArray(b.seats) &&
+      b.seats.length > 0
+  );
+};
 
 const BookingForm = () => {
   const { id } = useParams();
@@ -116,25 +26,78 @@ const BookingForm = () => {
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
+  const [bookedSeats, setBookedSeats] = useState([]);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [resetClicked, setResetClicked] = useState(false); // NEW flag
+
+  // Load booking to edit if exists, skip if reset clicked
+  useEffect(() => {
+    if (resetClicked) return; // skip loading after reset
+
+    const editBookingRaw = localStorage.getItem("editBooking");
+    const indexRaw = localStorage.getItem("editIndex");
+
+    if (editBookingRaw) {
+      try {
+        const editBooking = JSON.parse(editBookingRaw);
+        const index = indexRaw ? parseInt(indexRaw) : null;
+
+        if (editBooking && editBooking.movieId === parseInt(id)) {
+          setName(editBooking.name);
+          setEmail(editBooking.email);
+          setSelectedSeats(editBooking.seats);
+          setIsEditing(true);
+          setEditIndex(index);
+        }
+      } catch {
+        // ignore corrupted data
+      }
+    }
+  }, [id, resetClicked]);
+
+  // Load all booked seats for this movie to disable in SeatSelector
+  useEffect(() => {
+    const bookingsRaw = localStorage.getItem("bookings");
+    let bookings = bookingsRaw ? JSON.parse(bookingsRaw) : [];
+    bookings = cleanBookings(bookings);
+    let seats = [];
+    bookings.forEach((b, idx) => {
+      if (b.movieId === parseInt(id)) {
+        if (!(isEditing && editIndex === idx)) {
+          seats = seats.concat(b.seats);
+        }
+      }
+    });
+    setBookedSeats(seats);
+  }, [id, isEditing, editIndex]);
 
   useEffect(() => {
-    const editBooking = JSON.parse(localStorage.getItem("editBooking"));
-    const index = localStorage.getItem("editIndex");
+    return () => {
+      localStorage.removeItem("editBooking");
+      localStorage.removeItem("editIndex");
+    };
+  }, []);
 
-    if (editBooking && editBooking.movieId === parseInt(id)) {
-      setName(editBooking.name);
-      setEmail(editBooking.email);
-      setSelectedSeats(editBooking.seats);
-      setIsEditing(true);
-      setEditIndex(index ? parseInt(index) : null);
-    }
-  }, [id]);
+  const validateEmail = (email) => {
+    return /^\S+@\S+\.\S+$/.test(email);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (selectedSeats.length === 0) {
       alert("Please select at least one seat.");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
+    const conflictSeat = selectedSeats.find((seat) => bookedSeats.includes(seat));
+    if (conflictSeat) {
+      alert(`Seat ${conflictSeat} is already booked. Please select other seats.`);
       return;
     }
 
@@ -151,7 +114,9 @@ const BookingForm = () => {
       time: new Date().toLocaleTimeString(),
     };
 
-    const existing = JSON.parse(localStorage.getItem("bookings")) || [];
+    const existingRaw = localStorage.getItem("bookings");
+    let existing = existingRaw ? JSON.parse(existingRaw) : [];
+    existing = cleanBookings(existing);
 
     if (isEditing && editIndex !== null) {
       existing[editIndex] = newBooking;
@@ -162,113 +127,132 @@ const BookingForm = () => {
     }
 
     localStorage.setItem("bookings", JSON.stringify(existing));
-    alert(isEditing ? "Booking Updated!" : "Booking Successful!");
-    navigate("/bookings");
+
+    setSuccessMessage(isEditing ? "Booking updated successfully!" : "Booking successful!");
+
+    if (!isEditing) {
+      setName("");
+      setEmail("");
+      setSelectedSeats([]);
+    }
+
+    setTimeout(() => {
+      navigate("/bookings");
+    }, 1500);
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 shadow rounded mt-8">
-      <h2 className="text-2xl font-bold mb-4 text-center text-indigo-700">
-        {isEditing ? "Edit Booking" : `Book: ${movie?.title}`}
+    <div className="max-w-3xl mx-auto bg-white p-8 shadow-lg rounded-lg mt-10">
+      <h2 className="text-3xl font-extrabold mb-6 text-indigo-700 text-center">
+        {isEditing ? "Edit Your Booking" : `Book Tickets for "${movie?.title}"`}
       </h2>
 
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="block font-medium">Name:</label>
-          <input
-            type="text"
-            value={name}
-            required
-            onChange={(e) => setName(e.target.value)}
-            className="w-full border p-2 rounded"
+      <div className="flex flex-col md:flex-row gap-8">
+        <div className="md:w-1/3">
+          <img
+            src={movie?.poster}
+            alt={movie?.title}
+            className="rounded-lg shadow-md w-full object-cover"
           />
+          <h3 className="mt-4 text-xl font-semibold text-gray-800">{movie?.title}</h3>
+          <p className="mt-2 text-gray-600">{movie?.description || "Enjoy your movie!"}</p>
         </div>
 
-        <div className="mb-3">
-          <label className="block font-medium">Email:</label>
-          <input
-            type="email"
-            value={email}
-            required
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full border p-2 rounded"
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="md:w-2/3 space-y-5" autoComplete="off" noValidate>
+          <div>
+            <label className="block font-semibold mb-1" htmlFor="name">Name</label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              required
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your full name"
+              className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
 
-        <div className="mb-3">
-          <label className="block font-medium">Number of People:</label>
-          <input
-            type="number"
-            value={selectedSeats.length}
-            readOnly
-            className="w-full border p-2 rounded bg-gray-100"
-          />
-        </div>
+          <div>
+            <label className="block font-semibold mb-1" htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              required
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
 
-        <div className="mb-3">
-          <label className="block font-medium">Price per Ticket:</label>
-          <input
-            type="text"
-            value={`₹${ticketPrice}`}
-            readOnly
-            className="w-full border p-2 rounded bg-gray-100"
-          />
-        </div>
+          <div>
+            <label className="block font-semibold mb-1">Select Seats</label>
+            <SeatSelector
+              selectedSeats={selectedSeats}
+              setSelectedSeats={setSelectedSeats}
+              bookedSeats={bookedSeats}
+            />
+            
+          </div>
 
-        <div className="mb-3">
-          <label className="block font-medium">Total Price:</label>
-          <input
-            type="text"
-            value={`₹${ticketPrice * selectedSeats.length}`}
-            readOnly
-            className="w-full border p-2 rounded bg-gray-100"
-          />
-        </div>
+          <div className="grid grid-cols-2 gap-4 mt-4 text-gray-700">
+            <div>
+              <span className="font-semibold">Number of Tickets:</span> {selectedSeats.length}
+            </div>
+            <div>
+              <span className="font-semibold">Price per Ticket:</span> ₹{ticketPrice}
+            </div>
+            <div className="col-span-2 text-right text-xl font-bold text-indigo-600">
+              Total: ₹{ticketPrice * selectedSeats.length}
+            </div>
+          </div>
 
-        <div className="mb-4">
-          <SeatSelector
-            selectedSeats={selectedSeats}
-            setSelectedSeats={setSelectedSeats}
-          />
-        </div>
+          {successMessage && (
+            <div className="p-3 bg-green-100 text-green-800 rounded-md font-semibold text-center animate-fadeIn">
+              {successMessage}
+            </div>
+          )}
 
-        <div className="flex justify-between flex-wrap gap-2 mt-4">
-          <button
-            type="submit"
-            className="bg-indigo-600 text-white px-4 py-2 rounded"
-          >
-            {isEditing ? "Update Booking" : "Book Now"}
-          </button>
+          <div className="flex flex-wrap gap-4 justify-between">
+            <button
+              type="submit"
+              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-md transition"
+            >
+              {isEditing ? "Update Booking" : "Confirm Booking"}
+            </button>
 
-          <button
-            type="button"
-            onClick={() => {
-              setName("");
-              setEmail("");
-              setSelectedSeats([]);
-              setIsEditing(false);
-              setEditIndex(null);
-              localStorage.removeItem("editBooking");
-              localStorage.removeItem("editIndex");
-            }}
-            className="bg-yellow-500 text-white px-4 py-2 rounded"
-          >
-            Reset
-          </button>
+            <button
+              type="button"
+              onClick={() => {
+                setName("");
+                setEmail("");
+                setSelectedSeats([]);
+                setIsEditing(false);
+                setEditIndex(null);
+                localStorage.removeItem("editBooking");
+                localStorage.removeItem("editIndex");
+                setSuccessMessage("");
+                setResetClicked(true); // <-- prevent re-loading editBooking after reset
+              }}
+              className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-3 rounded-md transition"
+            >
+              Reset
+            </button>
 
-          <button
-            type="button"
-            onClick={() => {
-              localStorage.removeItem("editBooking");
-              localStorage.removeItem("editIndex");
-              navigate("/");
-            }}
-            className="bg-gray-500 text-white px-4 py-2 rounded"
-          >
-            Back
-          </button>
-        </div>
-      </form>
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.removeItem("editBooking");
+                localStorage.removeItem("editIndex");
+                navigate("/");
+              }}
+              className="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-semibold py-3 rounded-md transition"
+            >
+              Back
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

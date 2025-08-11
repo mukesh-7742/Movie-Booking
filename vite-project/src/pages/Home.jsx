@@ -1,99 +1,130 @@
 import React, { useState } from "react";
+import  movies  from "../data/Movies.js";
 import { Link } from "react-router-dom";
+import { Search, Filter } from "lucide-react";
 
-const movies = [
-  {
-    id: 1,
-    title: "Spider-Man: No Way Home",
-    poster: "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
-  },
-  {
-    id: 2,
-    title: "Oppenheimer",
-    poster: "https://image.tmdb.org/t/p/w500/8QVDXDiOGHRcAD4oM6MXjE0osSj.jpg",
-  },
-  {
-    id: 3,
-    title: "Barbie",
-    poster: "https://image.tmdb.org/t/p/w500/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg",
-  },
-  {
-    id: 4,
-    title: "Guardians of the Galaxy Vol. 3",
-    poster: "https://image.tmdb.org/t/p/w500/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg",
-  },
-  
-];
+const Home = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedGenre, setSelectedGenre] = useState("All");
 
-function Home() {
-  const [search, setSearch] = useState("");
+  const genres = ["All", ...new Set(movies.flatMap((m) => m.genres))];
 
-  const filteredMovies = movies.filter((movie) =>
-    movie.title.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredMovies = movies.filter((movie) => {
+    const matchesSearch = movie.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesGenre =
+      selectedGenre === "All" || movie.genres.includes(selectedGenre);
+    return matchesSearch && matchesGenre;
+  });
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-indigo-600 to-blue-400 text-white py-16 px-4 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4 animate-fade-in-down">
-          Welcome to Movie Booking
+    <div className="bg-gray-100 min-h-screen">
+      {/* Hero Banner */}
+      <div className="relative bg-gradient-to-r from-blue-800 to-purple-800 text-white p-8 md:p-16">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-center mb-6">
+          🎬 Now Showing
         </h1>
-        <p className="text-lg md:text-xl mb-6 animate-fade-in-up">
-          Book your favorite movies anytime, anywhere!
+        <p className="text-center text-lg text-gray-200 mb-8">
+          Book tickets for your favorite movies instantly
         </p>
-      </section>
 
-      {/* Movies Grid */}
-      <section className="max-w-6xl mx-auto py-10 px-4">
-        <h2 className="text-2xl font-semibold mb-6 text-gray-800">
-          Now Showing
-        </h2>
+        {/* Search & Filter */}
+        <div className="flex flex-col md:flex-row justify-center items-center gap-4">
+          <div className="flex items-center w-full md:w-1/3 bg-white text-gray-800 rounded-full shadow-lg px-4 transition-all duration-300 hover:shadow-2xl">
+            <Search className="text-gray-500" size={20} />
+            <input
+              type="text"
+              placeholder="Search movies..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full p-2 outline-none rounded-full"
+            />
+          </div>
 
-        {/* Search Bar */}
-        <div className="mb-8 flex justify-center">
-          <input
-            type="text"
-            placeholder="Search movies..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full max-w-md px-4 py-2 border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-          />
+          <div className="flex items-center w-full md:w-1/4 bg-white text-gray-800 rounded-full shadow-lg px-4 transition-all duration-300 hover:shadow-2xl">
+            <Filter className="text-gray-500" size={20} />
+            <select
+              value={selectedGenre}
+              onChange={(e) => setSelectedGenre(e.target.value)}
+              className="w-full p-2 outline-none bg-transparent rounded-full"
+            >
+              {genres.map((genre, index) => (
+                <option key={index} value={genre}>
+                  {genre}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {filteredMovies.length > 0 ? (
-            filteredMovies.map((movie) => (
+      {/* Movie Grid */}
+      <div className="p-6">
+        {filteredMovies.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {filteredMovies.map((movie) => (
               <div
                 key={movie.id}
-                className="bg-white rounded-xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition duration-300 ease-in-out p-4 flex flex-col items-center group animate-fade-in-up"
+                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 hover:scale-[1.02] hover:rotate-[1deg]"
               >
-                <div className="overflow-hidden rounded-lg w-full h-64">
+                {/* Movie Poster */}
+                <div className="relative group">
                   <img
                     src={movie.poster}
                     alt={movie.title}
-                    className="w-full h-full object-cover rounded group-hover:scale-110 transition-transform duration-300 ease-in-out"
+                    className="w-full h-72 object-cover transition-transform duration-700 group-hover:scale-110 group-hover:brightness-110"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-100"></div>
+                  <span className="absolute top-3 right-3 bg-yellow-500 text-black px-3 py-1 rounded-full text-sm font-bold shadow-md">
+                    ⭐ {movie.rating}
+                  </span>
+                  <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
+                    {movie.genres.map((g, i) => (
+                      <span
+                        key={i}
+                        className="bg-white/80 text-gray-900 px-2 py-1 rounded-full text-xs font-medium"
+                      >
+                        {g}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <h3 className="text-lg font-bold mt-4 mb-2 text-center">
-                  {movie.title}
-                </h3>
-                <Link to={`/movies/${movie.id}`} className="mt-auto">
-                  <button className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition duration-300 ease-in-out">
-                    Book Ticket
-                  </button>
-                </Link>
+
+                {/* Movie Details */}
+                <div className="p-4">
+                  <h2 className="text-lg font-bold">{movie.title}</h2>
+                  <p className="text-gray-600 text-sm line-clamp-2">
+                    {movie.description || "No description available."}
+                  </p>
+
+                  <div className="mt-4 flex gap-2">
+                    <Link to={`/booking/${movie.id}`} className="flex-1">
+                      <button className="w-full bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/50 transition-all duration-300">
+                        Book Now
+                      </button>
+                    </Link>
+
+                    <Link
+                      to={`/movies/${movie.id}`}
+                      className="flex-1 text-center border border-blue-600 text-blue-600 py-2 px-4 rounded-full hover:bg-blue-50 transition-all duration-300"
+                    >
+                      View Details
+                    </Link>
+                  </div>
+                </div>
+
               </div>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-10">
-              <p className="text-gray-500 text-xl">🎬 Oops! No matching movies.</p>
-            </div>
-          )}
-        </div>
-      </section>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center mt-20">
+            <p className="text-gray-500 text-lg">🎥 No movies found</p>
+          </div>
+        )}
+      </div>
     </div>
   );
-}
+};
 
 export default Home;
