@@ -70,6 +70,7 @@ const MovieDetails = () => {
             >
               🎟 Book Now
             </button>
+
           </div>
         </div>
       </div>

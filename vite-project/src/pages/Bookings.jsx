@@ -10,7 +10,7 @@ const Toast = ({ message, onClose }) => {
 
   return (
     <div
-      className="fixed bottom-5 right-5 bg-indigo-600 text-white px-5 py-3 rounded shadow-lg animate-fadeInUp z-50 flex items-center"
+      className="fixed bottom-5 right-5 bg-indigo-600 text-white px-5 py-3 rounded shadow-lg z-50 flex items-center transition transform ease-out duration-300"
       role="alert"
       aria-live="assertive"
     >
@@ -33,6 +33,7 @@ const Bookings = () => {
   const [toastMsg, setToastMsg] = useState(null);
   const navigate = useNavigate();
 
+  // Load bookings from localStorage
   useEffect(() => {
     try {
       const stored = JSON.parse(localStorage.getItem("bookings")) || [];
@@ -65,7 +66,6 @@ const Bookings = () => {
     localStorage.setItem("editBooking", JSON.stringify(booking));
     localStorage.setItem("editIndex", index);
     navigate(`/booking/${booking.movieId}`);
-    showToast("Loaded booking for editing.");
   };
 
   const filteredBookings = bookings.filter((booking) => {
@@ -124,11 +124,9 @@ const Bookings = () => {
                   key={index}
                   tabIndex={0}
                   aria-label={`Booking for ${movie?.title || "Unknown Movie"}`}
-                  className={`flex flex-col sm:flex-row sm:items-center bg-white shadow-lg rounded-lg overflow-hidden transition-transform duration-300 ease-in-out
+                  className={`flex flex-col sm:flex-row sm:items-center bg-white shadow-lg rounded-lg overflow-hidden transition-all duration-300 ease-in-out
                     ${isFadingOut ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100"}
-                    hover:scale-[1.02] hover:shadow-2xl
-                    `}
-                  style={{ transitionProperty: "opacity, transform" }}
+                    hover:scale-[1.02] hover:shadow-2xl`}
                 >
                   <img
                     src={movie?.poster || "https://via.placeholder.com/150x210?text=No+Image"}
@@ -138,11 +136,18 @@ const Bookings = () => {
 
                   <div className="p-6 flex flex-col flex-grow justify-between">
                     <div>
-                      <h3 className="text-2xl font-semibold text-gray-800">{movie?.title || "Unknown Movie"}</h3>
+                      <h3 className="text-2xl font-semibold text-gray-800">
+                        {movie?.title || "Unknown Movie"}
+                      </h3>
                       <div className="mt-2 text-gray-600 space-y-1 text-sm sm:text-base">
                         <p><strong>Name:</strong> {booking.name}</p>
                         <p><strong>Email:</strong> {booking.email}</p>
-                        <p><strong>Seats:</strong> {booking.seats.join(", ")}</p>
+                        <p>
+                          <strong>Seats:</strong>{" "}
+                          {Array.isArray(booking.seats)
+                            ? booking.seats.join(", ")
+                            : booking.seats || "N/A"}
+                        </p>
                         <p><strong>Total Price:</strong> ₹{booking.totalPrice}</p>
                         <p><strong>Date:</strong> {booking.date}</p>
                         <p><strong>Time:</strong> {booking.time}</p>

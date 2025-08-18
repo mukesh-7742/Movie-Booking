@@ -28,17 +28,14 @@ const BookingForm = () => {
   const [editIndex, setEditIndex] = useState(null);
   const [bookedSeats, setBookedSeats] = useState([]);
   const [successMessage, setSuccessMessage] = useState("");
-  const [resetClicked, setResetClicked] = useState(false); // NEW flag
 
-  // Load booking to edit if exists, skip if reset clicked
+  // Load booking to edit
   useEffect(() => {
-    if (resetClicked) return; // skip loading after reset
+    try {
+      const editBookingRaw = localStorage.getItem("editBooking");
+      const indexRaw = localStorage.getItem("editIndex");
 
-    const editBookingRaw = localStorage.getItem("editBooking");
-    const indexRaw = localStorage.getItem("editIndex");
-
-    if (editBookingRaw) {
-      try {
+      if (editBookingRaw) {
         const editBooking = JSON.parse(editBookingRaw);
         const index = indexRaw ? parseInt(indexRaw) : null;
 
@@ -49,28 +46,34 @@ const BookingForm = () => {
           setIsEditing(true);
           setEditIndex(index);
         }
-      } catch {
-        // ignore corrupted data
       }
+    } catch {
+      // ignore corrupted data
     }
-  }, [id, resetClicked]);
+  }, [id]);
 
-  // Load all booked seats for this movie to disable in SeatSelector
+  // Load already booked seats (disable in SeatSelector)
   useEffect(() => {
-    const bookingsRaw = localStorage.getItem("bookings");
-    let bookings = bookingsRaw ? JSON.parse(bookingsRaw) : [];
-    bookings = cleanBookings(bookings);
-    let seats = [];
-    bookings.forEach((b, idx) => {
-      if (b.movieId === parseInt(id)) {
-        if (!(isEditing && editIndex === idx)) {
-          seats = seats.concat(b.seats);
+    try {
+      const bookingsRaw = localStorage.getItem("bookings");
+      let bookings = bookingsRaw ? JSON.parse(bookingsRaw) : [];
+      bookings = cleanBookings(bookings);
+
+      let seats = [];
+      bookings.forEach((b, idx) => {
+        if (b.movieId === parseInt(id)) {
+          if (!(isEditing && editIndex === idx)) {
+            seats = seats.concat(b.seats);
+          }
         }
-      }
-    });
-    setBookedSeats(seats);
+      });
+      setBookedSeats(seats);
+    } catch {
+      setBookedSeats([]);
+    }
   }, [id, isEditing, editIndex]);
 
+  // Clear edit state on unmount
   useEffect(() => {
     return () => {
       localStorage.removeItem("editBooking");
@@ -78,9 +81,7 @@ const BookingForm = () => {
     };
   }, []);
 
-  const validateEmail = (email) => {
-    return /^\S+@\S+\.\S+$/.test(email);
-  };
+  const validateEmail = (email) => /^\S+@\S+\.\S+$/.test(email);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -97,7 +98,7 @@ const BookingForm = () => {
 
     const conflictSeat = selectedSeats.find((seat) => bookedSeats.includes(seat));
     if (conflictSeat) {
-      alert(`Seat ${conflictSeat} is already booked. Please select other seats.`);
+      alert(`Seat ${conflictSeat} is already booked.`);
       return;
     }
 
@@ -114,19 +115,21 @@ const BookingForm = () => {
       time: new Date().toLocaleTimeString(),
     };
 
-    const existingRaw = localStorage.getItem("bookings");
-    let existing = existingRaw ? JSON.parse(existingRaw) : [];
-    existing = cleanBookings(existing);
+    try {
+      const existingRaw = localStorage.getItem("bookings");
+      let existing = existingRaw ? JSON.parse(existingRaw) : [];
+      existing = cleanBookings(existing);
 
-    if (isEditing && editIndex !== null) {
-      existing[editIndex] = newBooking;
-      localStorage.removeItem("editBooking");
-      localStorage.removeItem("editIndex");
-    } else {
-      existing.push(newBooking);
+      if (isEditing && editIndex !== null) {
+        existing[editIndex] = newBooking;
+      } else {
+        existing.push(newBooking);
+      }
+
+      localStorage.setItem("bookings", JSON.stringify(existing));
+    } catch {
+      localStorage.setItem("bookings", JSON.stringify([newBooking]));
     }
-
-    localStorage.setItem("bookings", JSON.stringify(existing));
 
     setSuccessMessage(isEditing ? "Booking updated successfully!" : "Booking successful!");
 
@@ -141,23 +144,33 @@ const BookingForm = () => {
     }, 1500);
   };
 
+  if (!movie) {
+    return (
+      <h2 className="text-center text-red-600 mt-10">
+        Movie not found!
+      </h2>
+    );
+  }
+
   return (
     <div className="max-w-3xl mx-auto bg-white p-8 shadow-lg rounded-lg mt-10">
+      {/* ✅ Header without repeating title */}
       <h2 className="text-3xl font-extrabold mb-6 text-indigo-700 text-center">
-        {isEditing ? "Edit Your Booking" : `Book Tickets for "${movie?.title}"`}
+        {isEditing ? "Edit Your Booking" : "Book Your Tickets"}
       </h2>
 
       <div className="flex flex-col md:flex-row gap-8">
-        <div className="md:w-1/3">
+        {/* Poster + Title only */}
+        <div className="md:w-1/3 text-center">
           <img
-            src={movie?.poster}
-            alt={movie?.title}
+            src={movie.poster}
+            alt={movie.title}
             className="rounded-lg shadow-md w-full object-cover"
           />
-          <h3 className="mt-4 text-xl font-semibold text-gray-800">{movie?.title}</h3>
-          <p className="mt-2 text-gray-600">{movie?.description || "Enjoy your movie!"}</p>
+          <h3 className="mt-4 text-xl font-semibold text-gray-800">{movie.title}</h3>
         </div>
 
+        {/* FORM */}
         <form onSubmit={handleSubmit} className="md:w-2/3 space-y-5" autoComplete="off" noValidate>
           <div>
             <label className="block font-semibold mb-1" htmlFor="name">Name</label>
@@ -168,7 +181,7 @@ const BookingForm = () => {
               required
               onChange={(e) => setName(e.target.value)}
               placeholder="Your full name"
-              className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -181,7 +194,7 @@ const BookingForm = () => {
               required
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -192,16 +205,11 @@ const BookingForm = () => {
               setSelectedSeats={setSelectedSeats}
               bookedSeats={bookedSeats}
             />
-            
           </div>
 
           <div className="grid grid-cols-2 gap-4 mt-4 text-gray-700">
-            <div>
-              <span className="font-semibold">Number of Tickets:</span> {selectedSeats.length}
-            </div>
-            <div>
-              <span className="font-semibold">Price per Ticket:</span> ₹{ticketPrice}
-            </div>
+            <div><span className="font-semibold">Tickets:</span> {selectedSeats.length}</div>
+            <div><span className="font-semibold">Price per Ticket:</span> ₹{ticketPrice}</div>
             <div className="col-span-2 text-right text-xl font-bold text-indigo-600">
               Total: ₹{ticketPrice * selectedSeats.length}
             </div>
@@ -214,10 +222,7 @@ const BookingForm = () => {
           )}
 
           <div className="flex flex-wrap gap-4 justify-between">
-            <button
-              type="submit"
-              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-md transition"
-            >
+            <button type="submit" className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-md transition">
               {isEditing ? "Update Booking" : "Confirm Booking"}
             </button>
 
@@ -232,7 +237,6 @@ const BookingForm = () => {
                 localStorage.removeItem("editBooking");
                 localStorage.removeItem("editIndex");
                 setSuccessMessage("");
-                setResetClicked(true); // <-- prevent re-loading editBooking after reset
               }}
               className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-3 rounded-md transition"
             >
@@ -241,11 +245,7 @@ const BookingForm = () => {
 
             <button
               type="button"
-              onClick={() => {
-                localStorage.removeItem("editBooking");
-                localStorage.removeItem("editIndex");
-                navigate("/");
-              }}
+              onClick={() => navigate(`/movies/${id}`)}
               className="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-semibold py-3 rounded-md transition"
             >
               Back
