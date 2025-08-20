@@ -1,37 +1,32 @@
-# Node.js dependencies
-/node_modules
+# Dependencies
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+
+# Production build
+dist/
+build/
 
 # Environment variables
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Logs
 logs
 *.log
 logs/*.log
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage
-coverage
-*.lcov
-
-# Build / cache files
-dist
-build
-.cache
-.tmp
-
-# VSCode / IDE
+# Editor / OS files
 .vscode/
 .idea/
 .DS_Store
+Thumbs.db
 
-# Optional npm cache
-.npm
+# Cache
+.cache/
+*.tsbuildinfo
