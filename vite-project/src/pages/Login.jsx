@@ -1,36 +1,55 @@
-// src/pages/RegisterForm.jsx
+// src/pages/Login.jsx
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
-const RegisterForm = () => {
+const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleRegister = (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
 
     const users = JSON.parse(localStorage.getItem("users")) || [];
-    const userExists = users.find((u) => u.email === email);
-    if (userExists) {
-      alert("User already exists!");
+    const user = users.find((u) => u.email === email);
+
+    if (!user) {
+      setError("No account found with this email. Please register first.");
       return;
     }
 
-    users.push({ email, password });
-    localStorage.setItem("users", JSON.stringify(users));
-    alert("Registered successfully! You can now login.");
-    navigate("/login");
+    if (user.password !== password) {
+      setError("Incorrect password. Please try again.");
+      return;
+    }
+
+    // ✅ Save logged in user
+    localStorage.setItem("loggedInUser", JSON.stringify(user));
+
+    setSuccess("Login successful! Redirecting...");
+    setTimeout(() => navigate("/movies"), 1500); // redirect to movies page
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form onSubmit={handleRegister} className="bg-white p-6 rounded shadow-md w-96">
-        <h2 className="text-2xl font-bold mb-4 text-center">Sign Up</h2>
+      <form
+        onSubmit={handleLogin}
+        className="bg-white p-6 rounded shadow-md w-96"
+      >
+        <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
+
+        {/* Inline error/success messages */}
+        {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+        {success && <p className="text-green-600 text-sm mb-3">{success}</p>}
+
         <input
           type="email"
           placeholder="Email"
-          className="w-full mb-3 p-2 border"
+          className="w-full mb-3 p-2 border rounded"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -38,20 +57,28 @@ const RegisterForm = () => {
         <input
           type="password"
           placeholder="Password"
-          className="w-full mb-3 p-2 border"
+          className="w-full mb-3 p-2 border rounded"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit" className="w-full bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700">
-          Register
+
+        <button
+          type="submit"
+          className="w-full bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700"
+        >
+          Login
         </button>
+
         <p className="text-sm mt-3 text-center">
-          Already have an account? <Link to="/login" className="text-indigo-600">Login</Link>
+          Don’t have an account?{" "}
+          <Link to="/register" className="text-indigo-600">
+            Sign Up
+          </Link>
         </p>
       </form>
     </div>
   );
 };
 
-export default RegisterForm;
+export default Login;
