@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import movies from "../data/Movies.js";
 
@@ -33,19 +33,25 @@ const Bookings = () => {
   const [toastMsg, setToastMsg] = useState(null);
   const navigate = useNavigate();
 
-  // Load bookings from localStorage
+  // Load & sort bookings
   useEffect(() => {
     try {
       const stored = JSON.parse(localStorage.getItem("bookings")) || [];
-      setBookings(stored);
+
+      // Sort bookings by date & time (latest first)
+      const sorted = stored.sort((a, b) => {
+        const dateA = new Date(`${a.date} ${a.time}`);
+        const dateB = new Date(`${b.date} ${b.time}`);
+        return dateB - dateA;
+      });
+
+      setBookings(sorted);
     } catch {
       setBookings([]);
     }
   }, []);
 
-  const showToast = (msg) => {
-    setToastMsg(msg);
-  };
+  const showToast = (msg) => setToastMsg(msg);
 
   const handleCancel = (index) => {
     if (!window.confirm("Are you sure you want to cancel this booking?")) return;
@@ -68,14 +74,17 @@ const Bookings = () => {
     navigate(`/booking/${booking.movieId}`);
   };
 
-  const filteredBookings = bookings.filter((booking) => {
-    const movie = movies.find((m) => m.id === booking.movieId);
+  // Filter bookings (by name or movie title)
+  const filteredBookings = useMemo(() => {
     const search = filterText.toLowerCase();
-    return (
-      booking.name.toLowerCase().includes(search) ||
-      (movie?.title.toLowerCase().includes(search) ?? false)
-    );
-  });
+    return bookings.filter((booking) => {
+      const movie = movies.find((m) => m.id === booking.movieId);
+      return (
+        booking.name.toLowerCase().includes(search) ||
+        (movie?.title.toLowerCase().includes(search) ?? false)
+      );
+    });
+  }, [bookings, filterText]);
 
   if (bookings.length === 0) {
     return (
@@ -118,16 +127,25 @@ const Bookings = () => {
             filteredBookings.map((booking, index) => {
               const movie = movies.find((m) => m.id === booking.movieId);
               const isFadingOut = fadingOutIndex === index;
+              const isLatest = index === 0; // First booking is the latest one
 
               return (
                 <article
                   key={index}
                   tabIndex={0}
                   aria-label={`Booking for ${movie?.title || "Unknown Movie"}`}
-                  className={`flex flex-col sm:flex-row sm:items-center bg-white shadow-lg rounded-lg overflow-hidden transition-all duration-300 ease-in-out
+                  className={`relative flex flex-col sm:flex-row sm:items-center bg-white shadow-lg rounded-lg overflow-hidden transition-all duration-300 ease-in-out
                     ${isFadingOut ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100"}
-                    hover:scale-[1.02] hover:shadow-2xl`}
+                    hover:scale-[1.02] hover:shadow-2xl
+                    ${isLatest ? "border-4 border-indigo-600" : ""}`}
                 >
+                  {/* Current Booking Badge */}
+                  {isLatest && (
+                    <span className="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
+                      Current Booking
+                    </span>
+                  )}
+
                   <img
                     src={movie?.poster || "https://via.placeholder.com/150x210?text=No+Image"}
                     alt={movie?.title || "Unknown Movie Poster"}
