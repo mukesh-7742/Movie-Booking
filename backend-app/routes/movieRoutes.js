@@ -1,14 +1,21 @@
 import express from "express";
 import multer from "multer";
-import { getMovies, addMovie } from "../controllers/movieController.js";
+import {
+  addMovie,
+  getMovies,
+  getMovieById, // 👈 import new controller
+} from "../controllers/movieController.js";
 
 const router = express.Router();
+const upload = multer(); // use memory storage (no file saving locally)
 
-// Configure multer to store file in memory
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
-router.get("/", getMovies);
+// Add a new movie
 router.post("/", upload.single("poster"), addMovie);
+
+// Get all movies
+router.get("/", getMovies);
+
+// ✅ Get single movie by ID
+router.get("/:id", getMovieById);
 
 export default router;

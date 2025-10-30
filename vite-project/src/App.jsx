@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import RegisterForm from "./pages/RegisterForm";
 import Booking from "./pages/Booking"; // Booking form for a specific movie
 import Bookings from "./pages/Bookings";   // My bookings list
+import AddMovie from "./pages/AddMovie";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/movies/:id" element={<MovieDetails />} />
         <Route path="/booking/:id" element={<Booking />} />
         <Route path="/bookings" element={<Bookings />} />
+        <Route path="/add-movie" element={<AddMovie />} />
        
       </Routes>
     </Router>

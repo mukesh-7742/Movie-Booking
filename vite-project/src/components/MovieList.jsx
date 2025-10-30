@@ -1,24 +1,41 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import movies from "../data/Movies.js";
+import axios from "axios";
 
 const MovieList = () => {
+  const [movies, setMovies] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        const { data } = await axios.get("http://localhost:5000/api/movies");
+        setMovies(data);
+      } catch (err) {
+        console.error("Error fetching movies:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMovies();
+  }, []);
+
+  if (loading) return <p className="text-center mt-10">Loading movies...</p>;
+
   return (
     <div className="p-6 bg-gradient-to-b from-gray-100 to-gray-200 min-h-screen">
-      <h2 className="text-4xl font-bold text-center mb-10 text-blue-700">
-        🎬 Now Showing
-      </h2>
+      <h2 className="text-4xl font-bold text-center mb-10 text-blue-700">🎬 Now Showing</h2>
 
       <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {movies.map((movie) => (
           <div
-            key={movie.id}
+            key={movie._id}
             className="bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-500 hover:scale-[1.03] hover:-translate-y-2 hover:shadow-2xl"
           >
             {/* Poster */}
             <div className="relative overflow-hidden group">
               <img
-                src={movie.poster}
+                src={movie.poster?.url}
                 alt={movie.title}
                 className="w-full h-72 object-cover transition-transform duration-500 group-hover:scale-110 group-hover:brightness-110"
               />
@@ -35,16 +52,11 @@ const MovieList = () => {
                 <p className="text-gray-600 text-sm mt-1 line-clamp-2">
                   {movie.description}
                 </p>
-                <div className="text-sm text-gray-500 mt-2">
-                  <p><strong>Director:</strong> {movie.director}</p>
-                  <p><strong>Year:</strong> {movie.year}</p>
-                  <p><strong>Duration:</strong> {movie.duration}</p>
-                </div>
               </div>
 
-              {/* View Details Button */}
+              {/* View Details */}
               <Link
-                to={`/movies/${movie.id}`}
+                to={`/movies/${movie._id}`}
                 className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
               >
                 View Details

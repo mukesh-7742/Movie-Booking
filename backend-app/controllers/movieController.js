@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import cloudinary from "../utils/cloudinary.js";
 import Movie from "../models/Movie.js";
 
+
 // 🎬 Add Movie with direct Cloudinary upload (no multer-storage-cloudinary)
 export const addMovie = asyncHandler(async (req, res) => {
   const {
@@ -43,11 +44,29 @@ export const addMovie = asyncHandler(async (req, res) => {
     poster,
   });
 
-  res.status(201).json(movie);
+  res.status(201).json({
+    success: true,
+    message: "Movie added successfully",
+    data: movie,
+  });
 });
+
 
 // 🎥 Get all movies
 export const getMovies = asyncHandler(async (req, res) => {
   const movies = await Movie.find();
   res.status(200).json(movies);
+});
+
+
+// 🎞 Get single movie by ID
+export const getMovieById = asyncHandler(async (req, res) => {
+  const movie = await Movie.findById(req.params.id);
+
+  if (!movie) {
+    res.status(404);
+    throw new Error("Movie not found");
+  }
+
+  res.status(200).json(movie);
 });
