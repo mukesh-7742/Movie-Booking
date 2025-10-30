@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-// import connectDB from "./config/db.js";
+import connectDB from "./config/database.js";
 
 import userRoutes from "./routes/userRoutes.js";
 import movieRoutes from "./routes/movieRoutes.js";
@@ -9,21 +9,22 @@ import bookingRoutes from "./routes/bookingRoutes.js";
 import { notFound, errorHandler } from "./middlewares/errorMiddleware.js";
 
 dotenv.config();
-// connectDB();
+connectDB();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// Root route
+app.get("/", (req, res) => res.send("🎬 Movie Booking API is running!"));
+
+// API routes
 app.use("/api/users", userRoutes);
 app.use("/api/movies", movieRoutes);
 app.use("/api/bookings", bookingRoutes);
 
-// Not found middleware
+// Middlewares
 app.use(notFound);
-
-// Error handler middleware
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;

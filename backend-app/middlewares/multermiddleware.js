@@ -1,0 +1,24 @@
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import multer from "multer";
+
+// 🔐 Configure your Cloudinary credentials (from .env)
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// ☁️ Configure Multer storage for Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "movies",
+    allowed_formats: ["jpg", "png", "jpeg"],
+  },
+});
+
+// Initialize multer with the Cloudinary storage
+const upload = multer({ storage });
+
+export { cloudinary, upload };

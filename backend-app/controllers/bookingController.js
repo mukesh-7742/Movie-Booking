@@ -1,22 +1,21 @@
+import asyncHandler from "express-async-handler";
 import Booking from "../models/Booking.js";
 
 // Create booking
-const createBooking = async (req, res) => {
-  const { movieId, seats } = req.body;
+export const createBooking = asyncHandler(async (req, res) => {
+  const { movie, seats } = req.body;
 
   const booking = await Booking.create({
     user: req.user._id,
-    movie: movieId,
+    movie,
     seats,
   });
 
   res.status(201).json(booking);
-};
+});
 
 // Get user bookings
-const getUserBookings = async (req, res) => {
+export const getUserBookings = asyncHandler(async (req, res) => {
   const bookings = await Booking.find({ user: req.user._id }).populate("movie");
   res.json(bookings);
-};
-
-export { createBooking, getUserBookings };
+});
