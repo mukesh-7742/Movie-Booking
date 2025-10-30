@@ -12,18 +12,26 @@ dotenv.config();
 connectDB();
 
 const app = express();
-app.use(cors());
+
+// ✅ Correct CORS setup
+app.use(
+  cors({
+    origin: "http://localhost:5137", // your frontend URL
+    credentials: true, // optional, only if using cookies/auth
+  })
+);
+
 app.use(express.json());
 
-// Root route
+// ✅ Root route
 app.get("/", (req, res) => res.send("🎬 Movie Booking API is running!"));
 
-// API routes
+// ✅ API routes
 app.use("/api/users", userRoutes);
 app.use("/api/movies", movieRoutes);
 app.use("/api/bookings", bookingRoutes);
 
-// Middlewares
+// ✅ Error middlewares
 app.use(notFound);
 app.use(errorHandler);
 
