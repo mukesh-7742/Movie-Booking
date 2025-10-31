@@ -13,7 +13,8 @@ const MovieDetails = () => {
   useEffect(() => {
     const fetchMovie = async () => {
       try {
-        const { data } = await axios.get(`http://localhost:5000/api/movies/${id}`);
+        const { data } = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/movies/${id}`);
+        console.log("data",data);
         setMovie(data);
       } catch (err) {
         setError("Failed to fetch movie details. Please try again.");
