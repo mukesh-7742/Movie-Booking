@@ -3,7 +3,7 @@ import cloudinary from "../utils/cloudinary.js";
 import Movie from "../models/Movie.js";
 
 
-// 🎬 Add Movie with direct Cloudinary upload (no multer-storage-cloudinary)
+// Add Movie with direct Cloudinary upload (no multer-storage-cloudinary)
 export const addMovie = asyncHandler(async (req, res) => {
   let {
     title,
@@ -19,7 +19,7 @@ export const addMovie = asyncHandler(async (req, res) => {
 
   let poster = {};
 
-  // ✅ Cloudinary upload (if image uploaded)
+  //  Cloudinary upload (if image uploaded)
   if (req.file) {
     try {
       const base64String = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
@@ -28,12 +28,24 @@ export const addMovie = asyncHandler(async (req, res) => {
       });
       poster = { public_id: result.public_id, url: result.secure_url };
     } catch (error) {
-      console.error("❌ Cloudinary upload failed:", error);
+      console.error(" Cloudinary upload failed:", error);
       return res.status(500).json({ success: false, message: "Poster upload failed" });
     }
   }
-
-  // ✅ Fix: handle cast safely
+  // if poster URL is provided directly (json API)
+   else if (poster) {
+    try {
+      posterData =
+        typeof poster === "string"
+          ? { url: poster } // plain URL
+          : poster.url
+          ? poster // { url: "...", public_id?: "..." }
+          : { url: "" };
+    } catch (err) {
+      posterData = { url: "" };
+    }
+  }
+  //  Fix: handle cast safely
   let parsedCast = [];
   if (cast) {
     try {
