@@ -1,6 +1,6 @@
-// src/pages/Login.jsx
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -9,29 +9,29 @@ const Login = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
 
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const user = users.find((u) => u.email === email);
+    try {
+      const response = await axios.post("http://localhost:5000/api/users/login", {
+        email,
+        password,
+      });
 
-    if (!user) {
-      setError("No account found with this email. Please register first.");
-      return;
+      // ✅ If login successful
+      setSuccess("Login successful! Redirecting...");
+      localStorage.setItem("loggedInUser", JSON.stringify(response.data.user));
+
+      setTimeout(() => navigate("/movies"), 1500);
+    } catch (err) {
+      if (err.response && err.response.data.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("Server error. Please try again.");
+      }
     }
-
-    if (user.password !== password) {
-      setError("Incorrect password. Please try again.");
-      return;
-    }
-
-    // ✅ Save logged in user
-    localStorage.setItem("loggedInUser", JSON.stringify(user));
-
-    setSuccess("Login successful! Redirecting...");
-    setTimeout(() => navigate("/movies"), 1500); // redirect to movies page
   };
 
   return (
@@ -42,7 +42,6 @@ const Login = () => {
       >
         <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
 
-        {/* Inline error/success messages */}
         {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
         {success && <p className="text-green-600 text-sm mb-3">{success}</p>}
 

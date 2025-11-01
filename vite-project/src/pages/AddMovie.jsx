@@ -30,7 +30,7 @@ const AddMovie = () => {
     if (poster) data.append("poster", poster);
 
     try {
-      const res = await axios.post("http://localhost:5000/api/movies", data, {
+      const res = await axios.post(`${ProcessingInstruction.env.API_URL}/api/movies`, data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setMessage("✅ Movie added successfully!");
