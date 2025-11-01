@@ -5,7 +5,7 @@ import Movie from "../models/Movie.js";
 
 // 🎬 Add Movie with direct Cloudinary upload (no multer-storage-cloudinary)
 export const addMovie = asyncHandler(async (req, res) => {
-  const {
+  let {
     title,
     genre,
     releaseYear,
@@ -19,17 +19,35 @@ export const addMovie = asyncHandler(async (req, res) => {
 
   let poster = {};
 
+  // ✅ Cloudinary upload (if image uploaded)
   if (req.file) {
-    // Convert buffer to base64 string
-    const base64String = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
-
-    // Upload directly to Cloudinary
-    const result = await cloudinary.uploader.upload(base64String, {
-      folder: "movies",
-    });
-
-    poster = { public_id: result.public_id, url: result.secure_url };
+    try {
+      const base64String = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+      const result = await cloudinary.uploader.upload(base64String, {
+        folder: "movies",
+      });
+      poster = { public_id: result.public_id, url: result.secure_url };
+    } catch (error) {
+      console.error("❌ Cloudinary upload failed:", error);
+      return res.status(500).json({ success: false, message: "Poster upload failed" });
+    }
   }
+
+  // ✅ Fix: handle cast safely
+  let parsedCast = [];
+  if (cast) {
+    try {
+      parsedCast = typeof cast === "string" ? JSON.parse(cast) : cast;
+    } catch (error) {
+      console.error("Cast parse error:", error);
+      parsedCast = [];
+    }
+  }
+
+  // ✅ Convert number-like fields
+  releaseYear = Number(releaseYear);
+  rating = Number(rating);
+  duration = Number(duration);
 
   const movie = await Movie.create({
     title,
@@ -40,7 +58,7 @@ export const addMovie = asyncHandler(async (req, res) => {
     description,
     duration,
     category,
-    cast: cast ? JSON.parse(cast) : [],
+    cast: parsedCast,
     poster,
   });
 
@@ -50,6 +68,7 @@ export const addMovie = asyncHandler(async (req, res) => {
     data: movie,
   });
 });
+
 
 
 // 🎥 Get all movies
