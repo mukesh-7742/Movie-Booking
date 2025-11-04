@@ -18,10 +18,6 @@ const BookingSchema = new mongoose.Schema({
     seats: {
         type: [Number],
         required: true,
-        validate: {
-            validator: (arr) => arr.length > 0,
-            message: "At least one seat must be selected",
-        },
     },
     totalPrice: {
         type: Number,

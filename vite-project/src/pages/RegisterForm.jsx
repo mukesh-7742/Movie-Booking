@@ -1,11 +1,10 @@
-// src/pages/RegisterForm.jsx
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
 const RegisterForm = () => {
   const navigate = useNavigate();
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -23,20 +22,19 @@ const RegisterForm = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/users/register", {
-        name,
-        email,
-        password,
-      });
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/users/register`,
+        { username, email, password }
+      );
 
-      setSuccess("Account created successfully! Redirecting to login...");
-      setTimeout(() => navigate("/login"), 1500);
+      // ✅ Save token & user
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data));
+
+      setSuccess("🎉 Account created successfully! Redirecting...");
+      setTimeout(() => navigate("/movies"), 1500);
     } catch (err) {
-      if (err.response && err.response.data.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("Server error. Please try again.");
-      }
+      setError(err.response?.data?.message || "Server error. Please try again.");
     }
   };
 
@@ -55,10 +53,10 @@ const RegisterForm = () => {
 
         <input
           type="text"
-          placeholder="Name"
+          placeholder="Username"
           className="w-full mb-3 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           required
         />
         <input

@@ -15,14 +15,14 @@ const Login = () => {
     setSuccess("");
 
     try {
-      const response = await axios.post("http://localhost:5000/api/users/login", {
-        email,
-        password,
-      });
-
+      const { data } = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/users/login`,
+      { email, password }
+    );
       // ✅ If login successful
-      setSuccess("Login successful! Redirecting...");
+      localStorage.setItem("token", data.token);
       localStorage.setItem("loggedInUser", JSON.stringify(response.data.user));
+      setSuccess("Login successful! Redirecting...");
 
       setTimeout(() => navigate("/movies"), 1500);
     } catch (err) {
