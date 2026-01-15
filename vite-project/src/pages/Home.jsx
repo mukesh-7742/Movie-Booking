@@ -1,36 +1,92 @@
-import React, { useState } from "react";
-import  movies  from "../data/Movies.js";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
 import { Search, Filter } from "lucide-react";
 
 const Home = () => {
+  const [movies, setMovies] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("All");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const genres = ["All", ...new Set(movies.flatMap((m) => m.genres))];
+  // ✅ Fetch movies from backend
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/movies`);
+        setMovies(data);
+      } catch (err) {
+        console.error("Error fetching movies:", err);
+        setError("Failed to load movies. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const filteredMovies = movies.filter((movie) => {
+    fetchMovies();
+  }, []);
+
+  // ✅ Filter valid movies
+  const validMovies = movies.filter(
+    (m) => m && m.title && (Array.isArray(m.genre) || typeof m.genre === "string")
+  );
+
+  // ✅ Collect unique genres
+  const genres = [
+    "All",
+    ...new Set(
+      validMovies.flatMap((m) =>
+        Array.isArray(m.genre) ? m.genre : [m.genre]
+      )
+    ),
+  ];
+
+  // ✅ Filter by search + genre
+  const filteredMovies = validMovies.filter((movie) => {
     const matchesSearch = movie.title
-      .toLowerCase()
+      ?.toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchesGenre =
-      selectedGenre === "All" || movie.genres.includes(selectedGenre);
+      selectedGenre === "All" ||
+      (Array.isArray(movie.genre)
+        ? movie.genre.includes(selectedGenre)
+        : movie.genre === selectedGenre);
     return matchesSearch && matchesGenre;
   });
 
+  // ✅ Loading state
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen text-lg text-gray-600">
+        Loading movies...
+      </div>
+    );
+  }
+
+  // ✅ Error state
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen text-red-600 text-lg">
+        {error}
+      </div>
+    );
+  }
+
   return (
     <div className="bg-gray-100 min-h-screen">
-      {/* Hero Banner */}
+      {/* Hero Section */}
       <div className="relative bg-gradient-to-r from-blue-800 to-purple-800 text-white p-8 md:p-16">
         <h1 className="text-4xl md:text-5xl font-extrabold text-center mb-6">
           🎬 Now Showing
         </h1>
         <p className="text-center text-lg text-gray-200 mb-8">
-          Book tickets for your favorite movies instantly
+          Browse and book tickets for the latest movies!
         </p>
 
-        {/* Search & Filter */}
+        {/* Search and Filter Controls */}
         <div className="flex flex-col md:flex-row justify-center items-center gap-4">
+          {/* Search Bar */}
           <div className="flex items-center w-full md:w-1/3 bg-white text-gray-800 rounded-full shadow-lg px-4 transition-all duration-300 hover:shadow-2xl">
             <Search className="text-gray-500" size={20} />
             <input
@@ -42,6 +98,7 @@ const Home = () => {
             />
           </div>
 
+          {/* Genre Filter */}
           <div className="flex items-center w-full md:w-1/4 bg-white text-gray-800 rounded-full shadow-lg px-4 transition-all duration-300 hover:shadow-2xl">
             <Filter className="text-gray-500" size={20} />
             <select
@@ -65,29 +122,42 @@ const Home = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {filteredMovies.map((movie) => (
               <div
-                key={movie.id}
-                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 hover:scale-[1.02] hover:rotate-[1deg]"
+                key={movie._id}
+                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 hover:scale-[1.02]"
               >
                 {/* Movie Poster */}
                 <div className="relative group">
                   <img
-                    src={movie.poster}
+                    src={
+                      movie.poster?.url ||
+                      "https://via.placeholder.com/400x600?text=No+Image"
+                    }
                     alt={movie.title}
-                    className="w-full h-72 object-cover transition-transform duration-700 group-hover:scale-110 group-hover:brightness-110"
+                    className="w-full h-72 object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-100"></div>
-                  <span className="absolute top-3 right-3 bg-yellow-500 text-black px-3 py-1 rounded-full text-sm font-bold shadow-md">
-                    ⭐ {movie.rating}
-                  </span>
+
+                  {movie.rating && (
+                    <span className="absolute top-3 right-3 bg-yellow-400 text-black px-3 py-1 rounded-full text-sm font-bold shadow-md">
+                      ⭐ {movie.rating}
+                    </span>
+                  )}
+
                   <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
-                    {movie.genres.map((g, i) => (
-                      <span
-                        key={i}
-                        className="bg-white/80 text-gray-900 px-2 py-1 rounded-full text-xs font-medium"
-                      >
-                        {g}
-                      </span>
-                    ))}
+                    {Array.isArray(movie.genre)
+                      ? movie.genre.map((g, i) => (
+                          <span
+                            key={i}
+                            className="bg-white/80 text-gray-900 px-2 py-1 rounded-full text-xs font-medium"
+                          >
+                            {g}
+                          </span>
+                        ))
+                      : movie.genre && (
+                          <span className="bg-white/80 text-gray-900 px-2 py-1 rounded-full text-xs font-medium">
+                            {movie.genre}
+                          </span>
+                        )}
                   </div>
                 </div>
 
@@ -99,21 +169,20 @@ const Home = () => {
                   </p>
 
                   <div className="mt-4 flex gap-2">
-                    <Link to={`/booking/${movie.id}`} className="flex-1">
+                    <Link to={`/booking/${movie._id}`} className="flex-1">
                       <button className="w-full bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/50 transition-all duration-300">
                         Book Now
                       </button>
                     </Link>
 
                     <Link
-                      to={`/movies/${movie.id}`}
+                      to={`/movies/${movie._id}`}
                       className="flex-1 text-center border border-blue-600 text-blue-600 py-2 px-4 rounded-full hover:bg-blue-50 transition-all duration-300"
                     >
                       View Details
                     </Link>
                   </div>
                 </div>
-
               </div>
             ))}
           </div>

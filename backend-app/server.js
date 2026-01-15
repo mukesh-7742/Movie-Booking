@@ -14,12 +14,7 @@ connectDB();
 const app = express();
 
 // ✅ Correct CORS setup
-app.use(
-  cors({
-    origin: "http://localhost:5137", // your frontend URL
-    credentials: true, // optional, only if using cookies/auth
-  })
-);
+app.use(cors({}));
 
 app.use(express.json());
 
